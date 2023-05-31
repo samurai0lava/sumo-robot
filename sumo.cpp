@@ -1,100 +1,105 @@
-
 //strategie 1
 #include <Ultrasonic.h>
 
 #define mtr1speed 255
 #define mtr2speed 255
 
-Ultrasonic ultrasonic(12, 13);
+Ultrasonic ultrasonic(10, 11);
 int distance;
-
-
-
-int motor1Pin1 = 2;
-int motor1Pin2 = 3;
-int motor2Pin1 = 4;
-int motor2Pin2 = 5;
-int motor1speed = ?;
-int motor2speed = ?;
-
-int defensiveThreshold = 20;  
-int offensiveThreshold = 10;  
+int I = A5;
+int motorRIGHTPin1 = 2;
+int motorRIGHTPin2 = 5;
+int motorLEFTPin1 = 7;
+int motorLEFTPin2 = 4;
+int motorRIGHTspeed = 3;
+int motorLEFTspeed = 6;
+int defensiveThreshold = 20;
+int offensiveThreshold = 10;
 
 void setup() {
-  pinMode(motor1Pin1, OUTPUT);
-  pinMode(motor1Pin2, OUTPUT);
-  pinMode(motor2Pin1, OUTPUT);
-  pinMode(motor2Pin2, OUTPUT);
-  pinMode(motor1speed, OUTPUT);
-  pinMode(motor2speed, OUTPUT);
+  pinMode(motorRIGHTPin1, OUTPUT);
+  pinMode(motorRIGHTPin2, OUTPUT);
+  pinMode(motorLEFTPin1, OUTPUT);
+  pinMode(motorLEFTPin2, OUTPUT);
+  pinMode(motorRIGHTspeed, OUTPUT);
+  pinMode(motorLEFTspeed, OUTPUT);
+  Serial.begin(9600);
+ 
+
 }
 void moveForward() {
-  digitalWrite(motor1Pin1, HIGH);
-  digitalWrite(motor1Pin2, LOW);
-  digitalWrite(motor2Pin1, HIGH);
-  digitalWrite(motor2Pin2, LOW);
-  analogWrite(motor1speed, 200);
-  analogWrite(motor2speed, 200);
+  pinMode(motorRIGHTPin1, OUTPUT);
+  pinMode(motorRIGHTPin2, OUTPUT);
+  pinMode(motorLEFTPin1, OUTPUT);
+  pinMode(motorLEFTPin2, OUTPUT);
+  pinMode(motorRIGHTspeed, OUTPUT);
+  pinMode(motorLEFTspeed, OUTPUT);
+  pinMode(I, INPUT);
 }
 
 void moveBackward() {
-  digitalWrite(motor1Pin1, LOW);
-  digitalWrite(motor1Pin2, HIGH);
-  digitalWrite(motor2Pin1, LOW);
-  digitalWrite(motor2Pin2, HIGH);
-  analogWrite(motor1speed, 200);
-  analogWrite(motor2speed, 200);
+  digitalWrite(motorRIGHTPin1, LOW);
+  digitalWrite(motorRIGHTPin2, HIGH);
+  digitalWrite(motorLEFTPin1, LOW);
+  digitalWrite(motorLEFTPin2, HIGH);
+  digitalWrite(motorRIGHTspeed, 123);
+  digitalWrite(motorLEFTspeed, 126);
+}
+void  Stop() {
+  // Turn left
+  digitalWrite(motorRIGHTPin1, LOW);
+  digitalWrite(motorRIGHTPin2, LOW);
+  digitalWrite(motorLEFTPin1, LOW);
+  digitalWrite(motorLEFTPin2, LOW);
+  analogWrite(motorRIGHTspeed, 0);
+  analogWrite(motorLEFTspeed, 0);
+}
+void turn() {
+
+  // Turn left
+  digitalWrite(motorRIGHTPin1, LOW);
+  digitalWrite(motorRIGHTPin2, HIGH);
+  digitalWrite(motorLEFTPin1, HIGH);
+  digitalWrite(motorLEFTPin2, LOW);
+  analogWrite(motorRIGHTspeed, 120);
+  analogWrite(motorLEFTspeed, 120);
 }
 
-void turnRandomDirection() {
-  // Randomly choose left or right turn
-  if (random(2) == 0) {
-    // Turn left
-    digitalWrite(motor1Pin1, LOW);
-    digitalWrite(motor1Pin2, HIGH);
-    digitalWrite(motor2Pin1, HIGH);
-    digitalWrite(motor2Pin2, LOW);
-  } else {
-    // Turn right
-    digitalWrite(motor1Pin1, HIGH);
-    digitalWrite(motor1Pin2, LOW);
-    digitalWrite(motor2Pin1, LOW);
-    digitalWrite(motor2Pin2, HIGH);
-  }
-}
 
 void chargeForward() {
-  digitalWrite(motor1Pin1, HIGH);
-  digitalWrite(motor1Pin2, LOW);
-  digitalWrite(motor2Pin1, HIGH);
-  digitalWrite(motor2Pin2, LOW);
-  analogWrite(motor1speed, mtr1speed);
-  analogWrite(motor2speed, mtr2speed);
+  digitalWrite(motorRIGHTPin1, HIGH);
+  digitalWrite(motorRIGHTPin2, LOW);
+  digitalWrite(motorLEFTPin1, HIGH);
+  digitalWrite(motorLEFTPin2, LOW);
+  analogWrite(motorRIGHTspeed, mtr1speed);
+  analogWrite(motorLEFTspeed, mtr2speed);
 }
-void strategy1(){
-  if (distance > 0) {
-    if (distance <= defensiveThreshold) {
-      // Perform defensive action
-      moveBackward();
-      delay(500);
-      turnRandomDirection();
-      delay(1000);
-    } else if (distance <= offensiveThreshold) {
-      // Perform offensive action
-      chargeForward();
-      delay(1000);
-    } else {
-      // Default movement
-      moveForward();
-    }
-  }
-}
-
 
 void loop() {
-  distance = ultrasonic();
-  strategy1();
-  
-  
+  int circle = analogRead(I);
+  distance = ultrasonic.read();
+  Serial.println(distance);
+  if (distance > 55) {
+    turn();
+  }
+  else if (circle < 10 )  // <  650 means white line
+  {
+
+    for (int pos = 0; pos <= 150; pos += 1) {
+      moveBackward();
+      delay(5);
+    }
+
+  }
+  while (distance <= 55 )  {
+    chargeForward();
+    distance = ultrasonic.read();
+    circle = analogRead(I);
+    if ( circle < 10) {
+      break;
+    }
+    
+  }
+
 }
 
